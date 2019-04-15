@@ -1,0 +1,7 @@
+{
+  "name": "@packaged-ui/request",
+  "version": "0.0.1",
+  "repository": "git@github.com:packaged-ui/request.git",
+  "author": "Tom Kay <oridan82@gmail.com>",
+  "license": "MIT"
+}
