@@ -1,10 +1,16 @@
 export default class Request
 {
-  constructor(url, callback)
+  static get GET() {return 'get'};
+
+  static get POST() {return 'post'};
+
+  static get PUT() {return 'put'};
+
+  static get DELETE() {return 'delete'};
+
+  constructor(url)
   {
-    this
-      .setUrl(url)
-      .onSuccess(callback);
+    this.setUrl(url);
   }
 
   setUrl(url)
@@ -13,15 +19,15 @@ export default class Request
     return this;
   }
 
-  setData(data)
+  setMethod(url)
   {
-    this.data = data;
+    this.method = url;
     return this;
   }
 
-  onSuccess(callback)
+  setData(data)
   {
-    this.successCallback = callback;
+    this.data = data;
     return this;
   }
 
@@ -33,53 +39,44 @@ export default class Request
 
   send()
   {
-    const self = this;
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener(
-      'readystatechange',
-      function ()
+    return new Promise(
+      (resolve, reject) =>
       {
-        switch(xhr.readyState)
+        const xhr = new XMLHttpRequest();
+        xhr.addEventListener('load', function () {resolve(xhr.response)});
+        xhr.addEventListener('error', function () {reject(xhr.response)});
+
+        if(this.headers)
         {
-          case XMLHttpRequest.DONE:
-            if(self.successCallback)
+          for(let name in this.headers)
+          {
+            if(this.headers.hasOwnProperty(name))
             {
-              self.successCallback(xhr.response, xhr);
+              xhr.setRequestHeader(name, this.headers[name]);
             }
-            break;
+          }
         }
+
+        let data;
+        if((typeof this.data === 'object') && !(this.data instanceof FormData))
+        {
+          data = new FormData();
+          for(let name in this.data)
+          {
+            if(this.data.hasOwnProperty(name))
+            {
+              data.append(name, this.data[name]);
+            }
+          }
+        }
+        else
+        {
+          data = this.data;
+        }
+
+        xhr.open(this.method || Request.GET, this.url, true);
+        xhr.send(data);
       }
     );
-
-    if(this.headers)
-    {
-      for(let name in this.headers)
-      {
-        if(this.headers.hasOwnProperty(name))
-        {
-          xhr.setRequestHeader(name, this.headers[name]);
-        }
-      }
-    }
-
-    let data;
-    if(typeof this.data === 'object')
-    {
-      data = new FormData();
-      for(let name in this.data)
-      {
-        if(this.data.hasOwnProperty(name))
-        {
-          data.append(name, this.data[name]);
-        }
-      }
-    }
-    else
-    {
-      data = this.data;
-    }
-
-    xhr.open(data ? 'POST' : 'GET', this.url, true);
-    xhr.send(data);
   }
 }
