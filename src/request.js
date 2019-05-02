@@ -43,8 +43,8 @@ export default class Request
       (resolve, reject) =>
       {
         const xhr = new XMLHttpRequest();
-        xhr.addEventListener('load', function () {resolve(xhr.response)});
-        xhr.addEventListener('error', function () {reject(xhr.response)});
+        xhr.addEventListener('load', function () {resolve(xhr)});
+        xhr.addEventListener('error', function () {reject(xhr)});
 
         if(this.headers)
         {
