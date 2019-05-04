@@ -37,6 +37,12 @@ export default class Request
     return this;
   }
 
+  setResponseType(type)
+  {
+    this.responseType = type;
+    return this;
+  }
+
   send()
   {
     return new Promise(
@@ -45,6 +51,11 @@ export default class Request
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('load', function () {resolve(xhr)});
         xhr.addEventListener('error', function () {reject(xhr)});
+
+        if(this.responseType)
+        {
+          xhr.responseType = this.responseType;
+        }
 
         if(this.headers)
         {
