@@ -1,5 +1,15 @@
 export default class Request
 {
+  static get xhrClass()
+  {
+    return Request._XHR || XMLHttpRequest;
+  }
+
+  static set xhrClass(xhr)
+  {
+    Request._XHR = xhr;
+  }
+
   static get GET() {return 'get'};
 
   static get POST() {return 'post'};
@@ -48,7 +58,7 @@ export default class Request
     return new Promise(
       (resolve, reject) =>
       {
-        const xhr = new XMLHttpRequest();
+        const xhr = new (Request._XHR)();
         xhr.addEventListener('load', function () {resolve(xhr)});
         xhr.addEventListener('error', function () {reject(xhr)});
 
