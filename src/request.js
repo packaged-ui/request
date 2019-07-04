@@ -67,17 +67,6 @@ export default class Request
           xhr.responseType = this.responseType;
         }
 
-        if(this.headers)
-        {
-          for(let name in this.headers)
-          {
-            if(this.headers.hasOwnProperty(name))
-            {
-              xhr.setRequestHeader(name, this.headers[name]);
-            }
-          }
-        }
-
         let data;
         if((typeof this.data === 'object') && !(this.data instanceof FormData))
         {
@@ -96,6 +85,18 @@ export default class Request
         }
 
         xhr.open(this.method || Request.GET, this.url, true);
+
+        if(this.headers)
+        {
+          for(let name in this.headers)
+          {
+            if(this.headers.hasOwnProperty(name))
+            {
+              xhr.setRequestHeader(name, this.headers[name]);
+            }
+          }
+        }
+
         xhr.send(data);
       }
     );
