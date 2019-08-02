@@ -58,7 +58,7 @@ export default class Request
     return new Promise(
       (resolve, reject) =>
       {
-        const xhr = new (Request._XHR)();
+        const xhr = new (Request.xhrClass)();
         xhr.addEventListener('load', function () {resolve(xhr)});
         xhr.addEventListener('error', function () {reject(xhr)});
 
