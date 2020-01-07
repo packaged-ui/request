@@ -20,7 +20,12 @@ export default class Request
 
   constructor(url)
   {
-    this.setUrl(url);
+    this.url = url;
+    this.method = Request.GET;
+    this.data = {};
+    this.headers = {};
+    this.responseType = null;
+    this.eventCallback = null;
   }
 
   setUrl(url)
@@ -84,7 +89,7 @@ export default class Request
           data = this.data;
         }
 
-        xhr.open(this.method || Request.GET, this.url, true);
+        xhr.open(this.method, this.url, true);
 
         if(this.headers)
         {
