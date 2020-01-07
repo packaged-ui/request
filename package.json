@@ -1,7 +1,7 @@
 {
   "name": "@packaged-ui/request",
   "main": "src/request.js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "repository": "git@github.com:packaged-ui/request.git",
   "author": "Tom Kay <oridan82@gmail.com>",
   "license": "MIT"
