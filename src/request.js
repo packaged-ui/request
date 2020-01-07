@@ -66,6 +66,7 @@ export default class Request
         const xhr = new (Request.xhrClass)();
         xhr.addEventListener('load', function () {resolve(xhr)});
         xhr.addEventListener('error', function () {reject(xhr)});
+        xhr.addEventListener('abort', function () {reject(xhr)});
 
         if(this.responseType)
         {
