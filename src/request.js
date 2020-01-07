@@ -58,12 +58,29 @@ export default class Request
     return this;
   }
 
+  setEventCallback(cb)
+  {
+    this.eventCallback = cb;
+    return this;
+  }
+
   send()
   {
     return new Promise(
       (resolve, reject) =>
       {
         const xhr = new (Request.xhrClass)();
+
+        if(this.eventCallback)
+        {
+          xhr.addEventListener('loadstart', this.eventCallback);
+          xhr.addEventListener('load', this.eventCallback);
+          xhr.addEventListener('loadend', this.eventCallback);
+          xhr.addEventListener('progress', this.eventCallback);
+          xhr.addEventListener('error', this.eventCallback);
+          xhr.addEventListener('abort', this.eventCallback);
+        }
+
         xhr.addEventListener('load', function () {resolve(xhr)});
         xhr.addEventListener('error', function () {reject(xhr)});
         xhr.addEventListener('abort', function () {reject(xhr)});
