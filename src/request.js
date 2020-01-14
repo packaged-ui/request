@@ -26,6 +26,7 @@ export default class Request
     this.headers = {};
     this.responseType = null;
     this.eventCallback = null;
+    this._xhr = null;
   }
 
   setUrl(url)
@@ -66,10 +67,11 @@ export default class Request
 
   send()
   {
+    const self = this;
     return new Promise(
       (resolve, reject) =>
       {
-        const xhr = new (Request.xhrClass)();
+        const xhr = this._xhr = new (Request.xhrClass)();
 
         if(this.eventCallback)
         {
@@ -81,9 +83,21 @@ export default class Request
           xhr.addEventListener('abort', this.eventCallback);
         }
 
-        xhr.addEventListener('load', function () {resolve(xhr)});
-        xhr.addEventListener('error', function () {reject(xhr)});
-        xhr.addEventListener('abort', function () {reject(xhr)});
+        xhr.addEventListener('load', () =>
+        {
+          self._xhr = null;
+          resolve(xhr);
+        });
+        xhr.addEventListener('error', () =>
+        {
+          self._xhr = null;
+          reject(xhr);
+        });
+        xhr.addEventListener('abort', () =>
+        {
+          self._xhr = null;
+          reject(xhr);
+        });
 
         if(this.responseType)
         {
@@ -123,5 +137,13 @@ export default class Request
         xhr.send(data);
       }
     );
+  }
+
+  abort()
+  {
+    if(this._xhr && this._xhr.abort)
+    {
+      this._xhr.abort();
+    }
   }
 }
