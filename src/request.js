@@ -1,8 +1,8 @@
 export default class Request
 {
-  static get xhrClass()
+  get xhrClass()
   {
-    return Request._XHR || XMLHttpRequest;
+    return this._xhrClass || Request._XHR || XMLHttpRequest;
   }
 
   static set xhrClass(xhr)
@@ -18,7 +18,11 @@ export default class Request
 
   static get DELETE() {return 'delete'};
 
-  constructor(url)
+  /**
+   * @param {string} url
+   * @param {object} [xhrClass]
+   */
+  constructor(url, xhrClass)
   {
     this.url = url;
     this.method = Request.GET;
@@ -27,6 +31,7 @@ export default class Request
     this.responseType = null;
     this.eventCallback = null;
     this._xhr = null;
+    this._xhrClass = xhrClass;
   }
 
   setUrl(url)
@@ -71,7 +76,7 @@ export default class Request
     return new Promise(
       (resolve, reject) =>
       {
-        const xhr = this._xhr = new (Request.xhrClass)();
+        const xhr = this._xhr = new (this.xhrClass)();
 
         if(this.eventCallback)
         {
