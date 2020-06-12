@@ -29,7 +29,8 @@ export default class Request
     this.data = {};
     this.headers = {};
     this.responseType = null;
-    this.eventCallback = null;
+    this.downloadEventCallback = null;
+    this.uploadEventCallback = null;
     this._xhr = null;
     this._xhrClass = xhrClass;
   }
@@ -64,9 +65,10 @@ export default class Request
     return this;
   }
 
-  setEventCallback(cb)
+  setEventCallback(downloadCallback, uploadCallback)
   {
-    this.eventCallback = cb;
+    this.downloadEventCallback = downloadCallback;
+    this.uploadEventCallback = uploadCallback;
     return this;
   }
 
@@ -78,14 +80,24 @@ export default class Request
       {
         const xhr = this._xhr = new (this.xhrClass)();
 
-        if(this.eventCallback)
+        if(this.downloadEventCallback)
         {
-          xhr.addEventListener('loadstart', this.eventCallback);
-          xhr.addEventListener('load', this.eventCallback);
-          xhr.addEventListener('loadend', this.eventCallback);
-          xhr.addEventListener('progress', this.eventCallback);
-          xhr.addEventListener('error', this.eventCallback);
-          xhr.addEventListener('abort', this.eventCallback);
+          xhr.addEventListener('loadstart', this.downloadEventCallback);
+          xhr.addEventListener('load', this.downloadEventCallback);
+          xhr.addEventListener('loadend', this.downloadEventCallback);
+          xhr.addEventListener('progress', this.downloadEventCallback);
+          xhr.addEventListener('error', this.downloadEventCallback);
+          xhr.addEventListener('abort', this.downloadEventCallback);
+        }
+
+        if(this.uploadEventCallback)
+        {
+          xhr.addEventListener('loadstart', this.uploadEventCallback);
+          xhr.addEventListener('load', this.uploadEventCallback);
+          xhr.addEventListener('loadend', this.uploadEventCallback);
+          xhr.addEventListener('progress', this.uploadEventCallback);
+          xhr.addEventListener('error', this.uploadEventCallback);
+          xhr.addEventListener('abort', this.uploadEventCallback);
         }
 
         xhr.addEventListener('load', () =>
