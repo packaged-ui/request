@@ -31,6 +31,8 @@ export default class Request
     this.responseType = null;
     this.downloadEventCallback = null;
     this.uploadEventCallback = null;
+    this.withCredentials = null;
+
     this._xhr = null;
     this._xhrClass = xhrClass;
   }
@@ -69,6 +71,12 @@ export default class Request
   {
     this.downloadEventCallback = downloadCallback;
     this.uploadEventCallback = uploadCallback;
+    return this;
+  }
+
+  setWithCredentials(withCredentials)
+  {
+    this.withCredentials = withCredentials;
     return this;
   }
 
@@ -139,6 +147,11 @@ export default class Request
         }
 
         xhr.open(this.method, this.url, true);
+
+        if(this.withCredentials)
+        {
+          xhr.withCredentials = this.withCredentials;
+        }
 
         if(this.headers)
         {
