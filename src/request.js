@@ -121,7 +121,6 @@ export default class Request
         xhr.addEventListener('abort', () =>
         {
           self._xhr = null;
-          reject(xhr);
         });
 
         if(this.responseType)
