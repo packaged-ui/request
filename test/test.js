@@ -1,5 +1,4 @@
-import 'jsdom-global/register.js';
-import jsdom from 'jsdom-global';
+import {port as _p, server as _s} from './_setup.js';
 import http from 'http';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -9,11 +8,6 @@ import Request, {AbortError, ConnectionError} from '../src/request.js';
 
 chai.use(chaiAsPromised);
 chai.should();
-
-const _p = 8877;
-const _s = 'http://127.0.0.1:' + _p;
-
-jsdom(undefined, {url: _s});
 
 const server = http.createServer(
   function (req, res)
@@ -42,25 +36,27 @@ const server = http.createServer(
       res.writeHead(200, {'Content-Type': 'text/plain'});
       if(req.method.toLowerCase() === Request.GET)
       {
-        res.end('abc123');
+        const [, query] = req.url.split('?');
+        let data = Object.fromEntries((new URLSearchParams(query)).entries());
+        data = Object.keys(data).length > 0 && JSON.stringify(data) || 'abc123';
+        res.end(data);
       }
       else
       {
         let data = {};
-        if(req.headers['content-type'])
+        const _boundary = multipart.getBoundary(req.headers['content-type']);
+        if(req.headers['content-type'] && _boundary)
         {
-          const boundary = multipart.getBoundary(req.headers['content-type']);
-          if(boundary)
-          {
-            multipart.parse(Buffer.from(body, 'utf8'), boundary)
-                     .forEach((d) => {data[d.name] = d.data.toString();});
-          }
+          multipart.parse(Buffer.from(body, 'utf8'), _boundary)
+                   .forEach((d) => {data[d.name] = d.data.toString();});
         }
         else
         {
           data = Object.fromEntries((new URLSearchParams(body)).entries());
         }
-        res.end(JSON.stringify(data));
+
+        data = Object.keys(data).length > 0 && JSON.stringify(data) || 'abc123';
+        res.end(data);
       }
     });
   },
@@ -124,7 +120,9 @@ describe('request', function ()
     const a = req.send(data)
                  .then(x => x.response);
 
-    return a.should.eventually.be.equal(JSON.stringify(data));
+    const _compare = {};
+    data.forEach((v, k) => _compare[k] = v);
+    return a.should.eventually.be.equal(JSON.stringify(_compare));
   });
 
   it('urlSearchParams.toString()', function ()
@@ -133,10 +131,12 @@ describe('request', function ()
     data.set('test1', 'value1');
     data.set('test2', 'value2');
     const req = new Request(_s + '/test');
-    const a = req.setMethod('post').setData(data.toString())
+    const a = req.setMethod(Request.GET).setData(data.toString())
                  .send()
                  .then(x => x.response);
 
-    return a.should.eventually.be.equal(JSON.stringify(data));
+    const _compare = {};
+    data.forEach((v, k) => _compare[k] = v);
+    return a.should.eventually.be.equal(JSON.stringify(_compare));
   });
 });

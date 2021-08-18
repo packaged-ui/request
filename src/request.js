@@ -149,27 +149,59 @@ export default class Request
           xhr.responseType = this.responseType;
         }
 
-        let data;
+        const _method = this.method || Request.GET;
+        let _requestBody;
+        let _requestQuery = new URLSearchParams();
         if(this.data instanceof FormData)
         {
-          data = this.data;
+          if(_method === Request.GET)
+          {
+            this.data.entries().forEach(([k, v]) => _requestQuery.append(k, v));
+          }
+          else
+          {
+            _requestBody = this.data;
+          }
         }
         else if(this.data instanceof URLSearchParams)
         {
-          data = this.data.toString();
+          if(_method === Request.GET)
+          {
+            _requestQuery = this.data.toString();
+          }
+          else
+          {
+            _requestBody = this.data.toString();
+          }
         }
         else if(this.data && typeof this.data === 'object')
         {
-          data = Object.entries(this.data)
-                       .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
-                       .join('&');
+          if(_method === Request.GET)
+          {
+            _requestQuery = Object.entries(this.data)
+                                  .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+                                  .join('&');
+          }
+          else
+          {
+            _requestBody = Object.entries(this.data)
+                                 .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+                                 .join('&');
+          }
         }
         else
         {
-          data = this.data;
+          if(_method === Request.GET)
+          {
+            _requestQuery = (new URLSearchParams(this.data));
+          }
+          else
+          {
+            _requestBody = this.data;
+          }
         }
 
-        xhr.open(this.method || Request.GET, this.url, true);
+        xhr.open(_method, _concatPath(this.url, _requestQuery.toString()), true);
 
         if(this.withCredentials)
         {
@@ -187,7 +219,7 @@ export default class Request
           }
         }
 
-        xhr.send(data);
+        xhr.send(_requestBody);
       },
     );
   }
@@ -221,4 +253,17 @@ export class ConnectionError extends Error
     super(message);
     this.#_xhr = xhr;
   }
+}
+
+function _concatPath(path, query)
+{
+  let qs;
+  [path, qs] = path.split('?');
+  qs = new URLSearchParams(qs);
+  (new URLSearchParams(query)).forEach((v, k) => qs.append(k, v));
+  if(Array.from(qs).length > 0)
+  {
+    path = path + '?' + qs.toString();
+  }
+  return path;
 }
