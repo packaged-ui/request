@@ -1,9 +1,18 @@
 {
   "name": "@packaged-ui/request",
   "main": "src/request.js",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "type": "module",
+  "private": false,
   "repository": "git@github.com:packaged-ui/request.git",
   "author": "Tom Kay <oridan82@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "jsdom": "17.0.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^9.0.3",
+    "parse-multipart-data": "^1.2.0"
+  }
 }

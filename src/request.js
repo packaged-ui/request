@@ -1,5 +1,10 @@
 export default class Request
 {
+  get xhr()
+  {
+    return this._xhr;
+  }
+
   get xhrClass()
   {
     return this._xhrClass || Request._XHR || XMLHttpRequest;
@@ -10,13 +15,13 @@ export default class Request
     Request._XHR = xhr;
   }
 
-  static get GET() {return 'get'};
+  static get GET() {return 'get';}
 
-  static get POST() {return 'post'};
+  static get POST() {return 'post';}
 
-  static get PUT() {return 'put'};
+  static get PUT() {return 'put';}
 
-  static get DELETE() {return 'delete'};
+  static get DELETE() {return 'delete';}
 
   /**
    * @param {string} url
@@ -25,8 +30,8 @@ export default class Request
   constructor(url, xhrClass)
   {
     this.url = url;
-    this.method = Request.GET;
-    this.data = {};
+    this.method = null;
+    this.data = null;
     this.headers = {};
     this.responseType = null;
     this.downloadEventCallback = null;
@@ -43,9 +48,9 @@ export default class Request
     return this;
   }
 
-  setMethod(url)
+  setMethod(method)
   {
-    this.method = url;
+    this.method = method;
     return this;
   }
 
@@ -80,12 +85,27 @@ export default class Request
     return this;
   }
 
-  send()
+  send(data, method)
   {
     const self = this;
+    if(data)
+    {
+      this.setData(data);
+      if(!this.method && !method)
+      {
+        method = Request.POST;
+      }
+    }
+    if(method !== undefined)
+    {
+      this.setMethod(method);
+    }
     return new Promise(
       (resolve, reject) =>
       {
+        /**
+         * @type {XMLHttpRequest}
+         */
         const xhr = this._xhr = new (this.xhrClass)();
 
         if(this.downloadEventCallback)
@@ -100,12 +120,12 @@ export default class Request
 
         if(this.uploadEventCallback)
         {
-          xhr.addEventListener('loadstart', this.uploadEventCallback);
-          xhr.addEventListener('load', this.uploadEventCallback);
-          xhr.addEventListener('loadend', this.uploadEventCallback);
-          xhr.addEventListener('progress', this.uploadEventCallback);
-          xhr.addEventListener('error', this.uploadEventCallback);
-          xhr.addEventListener('abort', this.uploadEventCallback);
+          xhr.upload.addEventListener('loadstart', this.uploadEventCallback);
+          xhr.upload.addEventListener('load', this.uploadEventCallback);
+          xhr.upload.addEventListener('loadend', this.uploadEventCallback);
+          xhr.upload.addEventListener('progress', this.uploadEventCallback);
+          xhr.upload.addEventListener('error', this.uploadEventCallback);
+          xhr.upload.addEventListener('abort', this.uploadEventCallback);
         }
 
         xhr.addEventListener('load', () =>
@@ -116,11 +136,12 @@ export default class Request
         xhr.addEventListener('error', () =>
         {
           self._xhr = null;
-          reject(xhr);
+          reject(new ConnectionError(xhr.statusText || 'socket closed', xhr));
         });
         xhr.addEventListener('abort', () =>
         {
           self._xhr = null;
+          reject(new AbortError('aborted', xhr));
         });
 
         if(this.responseType)
@@ -129,23 +150,26 @@ export default class Request
         }
 
         let data;
-        if((typeof this.data === 'object') && !(this.data instanceof FormData))
+        if(this.data instanceof FormData)
         {
-          data = new FormData();
-          for(let name in this.data)
-          {
-            if(this.data.hasOwnProperty(name))
-            {
-              data.append(name, this.data[name]);
-            }
-          }
+          data = this.data;
+        }
+        else if(this.data instanceof URLSearchParams)
+        {
+          data = this.data.toString();
+        }
+        else if(this.data && typeof this.data === 'object')
+        {
+          data = Object.entries(this.data)
+                       .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+                       .join('&');
         }
         else
         {
           data = this.data;
         }
 
-        xhr.open(this.method, this.url, true);
+        xhr.open(this.method || Request.GET, this.url, true);
 
         if(this.withCredentials)
         {
@@ -164,7 +188,7 @@ export default class Request
         }
 
         xhr.send(data);
-      }
+      },
     );
   }
 
@@ -174,5 +198,27 @@ export default class Request
     {
       this._xhr.abort();
     }
+  }
+}
+
+export class AbortError extends Error
+{
+  #_xhr;
+
+  constructor(message, xhr)
+  {
+    super(message);
+    this.#_xhr = xhr;
+  }
+}
+
+export class ConnectionError extends Error
+{
+  #_xhr;
+
+  constructor(message, xhr)
+  {
+    super(message);
+    this.#_xhr = xhr;
   }
 }
