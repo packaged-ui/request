@@ -111,6 +111,19 @@ describe('request', function ()
     return a.should.eventually.be.equal(JSON.stringify(Object.fromEntries(data)));
   });
 
+  it('formData - get', function ()
+  {
+    const data = new FormData();
+    data.set('test1', 'value1');
+    data.set('test2', 'value2');
+    const req = new Request(_s + '/test');
+    const a = req.setMethod(Request.GET).setData(data)
+                 .send()
+                 .then(x => x.response);
+
+    return a.should.eventually.be.equal(JSON.stringify(Object.fromEntries(data)));
+  });
+
   it('urlSearchParams', function ()
   {
     const data = new URLSearchParams();

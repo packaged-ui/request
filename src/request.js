@@ -156,7 +156,7 @@ export default class Request
         {
           if(_method === Request.GET)
           {
-            this.data.entries().forEach(([k, v]) => _requestQuery.append(k, v));
+            this.data.forEach((v, k) => _requestQuery.append(k, v));
           }
           else
           {
