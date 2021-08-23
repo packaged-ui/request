@@ -189,7 +189,7 @@ export default class Request
                                  .join('&');
           }
         }
-        else
+        else if(this.data !== undefined && this.data !== null)
         {
           if(_method === Request.GET)
           {

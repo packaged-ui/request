@@ -2,9 +2,9 @@
 import {JSDOM} from 'jsdom';
 
 export const port = 8877;
-export const server = 'http://127.0.0.1:' + port;
+export const serverUrl = 'http://127.0.0.1:' + port;
 
-export const jsdom = new JSDOM('<!doctype html><html lang="en"><body></body></html>', {url: server});
+export const jsdom = new JSDOM('<!doctype html><html lang="en"><body></body></html>', {url: serverUrl});
 const {window} = jsdom;
 
 function copyProps(src, target)

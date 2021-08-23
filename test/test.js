@@ -1,4 +1,4 @@
-import {port as _p, server as _s} from './_setup.js';
+import {port as _p, serverUrl as _s} from './_setup.js';
 import http from 'http';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
